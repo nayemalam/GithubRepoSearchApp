@@ -7,6 +7,10 @@ type ThemeType = {
     purple: string;
   };
   pageTitleLarge: TextStyle;
+  font: {
+    SFProTextRegular: string;
+    SFProTextBold: string;
+  };
 };
 
 export const theme: ThemeType = {
@@ -19,5 +23,9 @@ export const theme: ThemeType = {
     color: '#FFF',
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  font: {
+    SFProTextRegular: 'SF-Pro-Display-Regular',
+    SFProTextBold: 'SF-Pro-Display-Bold',
   },
 };

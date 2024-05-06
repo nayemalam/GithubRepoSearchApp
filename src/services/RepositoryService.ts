@@ -14,7 +14,7 @@ export async function searchRepositories(
   if (perPage !== undefined) queryParams += `&per_page=${perPage}`;
 
   try {
-    // https://api.github.com/search/repositories?q=SmartPaperSearch&order=desc&page=1&per_page=10
+    // ex. https://api.github.com/search/repositories?q=SmartPaperSearch&order=desc&page=1&per_page=10
     const response = await fetch(
       `${API_BASE_URL}/search/repositories?${queryParams}`,
       {

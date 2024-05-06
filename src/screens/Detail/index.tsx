@@ -1,10 +1,7 @@
 import Icon from '@expo/vector-icons/Octicons';
 import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
-import { Skeleton } from 'moti/skeleton';
-import { useEffect, useState } from 'react';
 import {
   Image,
   ScrollView,
@@ -15,10 +12,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GenericErrorView from '../../components/GenericErrorView';
-import { Spacer } from '../../components/Spacer';
-import repositoryService from '../../services/RepositoryService';
+import { GradientBackground } from '../../components/GradientBackground';
+import { LanguagesSkeleton } from '../../components/LanguagesSkeleton';
+import { Stats } from '../../components/Stats';
+import { useGetLanguages } from '../../hooks/useGetLanguages';
+import { useGetRepository } from '../../hooks/useGetRepository';
+import { theme } from '../../styles/theme';
 import { RootStackParamList } from '../../types';
-import { convertToInternationalCurrencySystem } from '../../utils';
 
 type DetailScreenRouteProp = RouteProp<RootStackParamList, 'Detail'>;
 type SearchScreenNavigationProp = NativeStackNavigationProp<
@@ -35,55 +35,21 @@ export default function DetailScreen({ route, navigation }: Props) {
   if (!route.params) {
     return <GenericErrorView title="Nothing to show" goBackMessage="Go Home" />;
   }
-  const [languages, setLanguages] = useState<string[]>([]);
-  const [isLoadingLanguages, setIsLoadingLanguages] = useState(false);
-  const [watchersCount, setWatchersCount] = useState<number | null>(null);
-
-  console.log('route.params', route.params.repository);
 
   const repository = route.params.repository;
 
-  useEffect(() => {
-    const fetchLanguages = async () => {
-      setIsLoadingLanguages(true);
-      try {
-        const response = await repositoryService.getLanguagesByOwnerAndRepo(
-          repository.owner.login,
-          repository.name,
-        );
-        setLanguages(Object.keys(response));
-      } catch (err) {
-        console.error('Failed to fetch languages', err);
-      } finally {
-        setIsLoadingLanguages(false);
-      }
-    };
+  const { languages, isLoading: isLanguagesLoading } = useGetLanguages({
+    owner: repository.owner.login,
+    repo: repository.name,
+  });
 
-    const fetchWatchers = async () => {
-      try {
-        const response = await repositoryService.getRepository(
-          repository.owner.login,
-          repository.name,
-        );
-        setWatchersCount(response.subscribers_count);
-      } catch (err) {
-        console.error('Failed to fetch watchers count', err);
-      }
-    };
-
-    fetchLanguages();
-    fetchWatchers();
-  }, [repository]);
-
-  console.log('watchersCount', watchersCount);
+  const { watchersCount } = useGetRepository({
+    owner: repository.owner.login,
+    repo: repository.name,
+  });
 
   return (
-    <LinearGradient
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      colors={['rgba(96, 31, 235, 0.1)', 'rgba(241, 241, 241, 0)']}
-      locations={[0, 1]}
-      style={styles.container}>
+    <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <View>
           <TouchableOpacity
@@ -93,91 +59,31 @@ export default function DetailScreen({ route, navigation }: Props) {
           </TouchableOpacity>
 
           <View style={styles.header}>
-            <View style={{ marginHorizontal: 30 }}>
+            <View style={styles.mx30}>
               <Image
                 style={styles.profileImage}
                 source={{ uri: repository.owner.avatar_url }}
               />
-              <View
-                style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  marginBottom: 5,
-                }}>
+              <View style={styles.headerName}>
                 <Text style={styles.title}>{repository.owner.login}/</Text>
-                <Text
-                  style={{
-                    fontSize: 24,
-                    fontFamily: 'SF-Pro-Display-Bold',
-                  }}>
-                  {repository.name}
-                </Text>
+                <Text style={styles.repoName}>{repository.name}</Text>
               </View>
-              <View style={styles.statsContainer}>
-                {watchersCount && (
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      gap: 5,
-                    }}>
-                    <Icon name="eye" size={16} color="#707070" />
-                    <Text style={{ fontSize: 12, color: '#707070' }}>
-                      {convertToInternationalCurrencySystem(watchersCount)}
-                    </Text>
-                  </View>
-                )}
-                {repository.forks && (
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      gap: 5,
-                    }}>
-                    <Icon name="repo-forked" size={16} color="#707070" />
-                    <Text style={{ fontSize: 12, color: '#707070' }}>
-                      {convertToInternationalCurrencySystem(repository.forks)}
-                    </Text>
-                  </View>
-                )}
-                {repository.stargazers_count && (
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      gap: 5,
-                    }}>
-                    <Icon name="star" size={16} color="#707070" />
-                    <Text style={{ fontSize: 12, color: '#707070' }}>
-                      {convertToInternationalCurrencySystem(
-                        repository.stargazers_count,
-                      )}
-                    </Text>
-                  </View>
-                )}
-              </View>
+              <Stats
+                forks={repository.forks}
+                stars={repository.stargazers_count}
+                watchers={watchersCount}
+              />
             </View>
           </View>
           <ScrollView style={styles.sectionContainer}>
             <Text style={styles.description}>{repository.description}</Text>
             <Text style={styles.sectionTitle}>Languages</Text>
-            {isLoadingLanguages &&
-              Array.from({ length: 10 }).map((_, index) => (
-                <>
-                  <Skeleton
-                    key={index}
-                    colorMode="light"
-                    width={50}
-                    height={10}
-                  />
-                  <Spacer height={5} />
-                </>
-              ))}
-            {languages.length === 0 && !isLoadingLanguages && (
+            {isLanguagesLoading && <LanguagesSkeleton />}
+            {languages.length === 0 && !isLanguagesLoading && (
               <Text>No languages found</Text>
             )}
             {languages.map((language, index) => (
-              <Text key={index} style={styles.language}>
+              <Text key={`${language}-${index}`} style={styles.language}>
                 {language}
               </Text>
             ))}
@@ -186,13 +92,12 @@ export default function DetailScreen({ route, navigation }: Props) {
         <TouchableOpacity
           style={styles.repoButton}
           onPress={() => {
-            console.log('opening url', repository.html_url);
             Linking.openURL(repository.html_url);
           }}>
           <Text style={styles.repoButtonText}>Go to Repo</Text>
         </TouchableOpacity>
       </SafeAreaView>
-    </LinearGradient>
+    </GradientBackground>
   );
 }
 
@@ -200,13 +105,12 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  container: {
-    flex: 1,
-    backgroundColor: '#F1F1F1',
-  },
   backButton: {
     marginTop: 20,
     marginBottom: 10,
+    marginHorizontal: 30,
+  },
+  mx30: {
     marginHorizontal: 30,
   },
   header: {
@@ -214,6 +118,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#DDDDDD',
+  },
+  headerName: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  repoName: {
+    fontSize: 24,
+    fontFamily: theme.font.SFProTextBold,
   },
   profileImage: {
     width: 80,
@@ -223,20 +136,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: 'SF-Pro-Display-Regular',
+    fontFamily: theme.font.SFProTextRegular,
   },
   description: {
     fontSize: 16,
     color: '#666',
     marginBottom: 10,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    gap: 14,
-    width: '100%',
-    marginBottom: 20,
-    maxWidth: 265,
-    marginTop: 10,
   },
   sectionContainer: {
     marginBottom: 20,
@@ -265,6 +170,6 @@ const styles = StyleSheet.create({
   repoButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontFamily: 'SF-Pro-Display-Bold',
+    fontFamily: theme.font.SFProTextBold,
   },
 });

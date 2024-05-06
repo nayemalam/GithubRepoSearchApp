@@ -69,15 +69,10 @@ const useSearch = ({
   return {
     query,
     setQuery,
-    debouncedQuery,
     results,
     totalItems,
     isLoading,
     error,
-    currentPage,
-    setCurrentPage,
-    itemsPerPage,
-    setItemsPerPage,
   };
 };
 
