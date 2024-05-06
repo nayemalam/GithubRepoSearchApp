@@ -1,6 +1,12 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Skeleton } from 'moti/skeleton';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import {
+  Keyboard,
+  SafeAreaView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import DynamicStickyHeaderFlatlist from '../../components/DynamicStickyHeaderFlatlist';
 import { GradientBackground } from '../../components/GradientBackground';
 import { RepositoryCard } from '../../components/RepositoryCard';
@@ -33,47 +39,42 @@ export default function SearchScreen({ navigation }: Props) {
   return (
     <GradientBackground>
       <SafeAreaView>
-        <View>
-          <DynamicStickyHeaderFlatlist
-            data={repositories}
-            style={styles.list}
-            HeaderComponent={<SearchHeader />}
-            StickyElementComponent={
-              <SearchBar query={query} setQuery={setQuery} />
-            }
-            renderItem={({ item }) => (
-              <>
-                {isLoading && (
-                  <View style={styles.mx30}>
-                    <Skeleton colorMode="light" width={'100%'} height={60} />
-                    <Spacer height={5} />
-                  </View>
-                )}
-                {!isLoading && (
-                  <RepositoryCard
-                    navigation={navigation}
-                    repository={item}
-                    query={query}
-                  />
-                )}
-              </>
-            )}
-            TopListElementComponent={<View />}
-          />
-        </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View>
+            <DynamicStickyHeaderFlatlist
+              data={repositories}
+              style={styles.list}
+              HeaderComponent={<SearchHeader />}
+              StickyElementComponent={
+                <SearchBar query={query} setQuery={setQuery} />
+              }
+              renderItem={({ item }) => (
+                <>
+                  {isLoading && (
+                    <View style={styles.mx30}>
+                      <Skeleton colorMode="light" width={'100%'} height={90} />
+                      <Spacer height={5} />
+                    </View>
+                  )}
+                  {!isLoading && (
+                    <RepositoryCard
+                      navigation={navigation}
+                      repository={item}
+                      query={query}
+                    />
+                  )}
+                </>
+              )}
+              TopListElementComponent={<View />}
+            />
+          </View>
+        </TouchableWithoutFeedback>
       </SafeAreaView>
     </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    borderColor: 'red',
-    borderWidth: 5,
-    height: 100,
-    marginBottom: 6,
-    width: '100%',
-  },
   mx30: {
     marginHorizontal: 30,
   },
@@ -87,6 +88,5 @@ const styles = StyleSheet.create({
   list: {
     marginTop: 20,
     overflow: 'hidden',
-    alignItems: 'center',
   },
 });

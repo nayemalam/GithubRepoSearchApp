@@ -16,8 +16,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
     marginBottom: 20,
-    marginHorizontal: 10,
+    marginHorizontal: 20,
     gap: 10,
     paddingHorizontal: 20,
     marginTop: 20,

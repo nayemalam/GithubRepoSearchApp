@@ -1,6 +1,12 @@
 # GithubRepoSearchApp 📱
 A simple iOS and Android app that allows you to search for repositories on GitHub using the GitHub API. The app is built using React Native and TypeScript.
 
+# Table of Contents
+- [Table of Contents](#table-of-contents)
+- [App Screenshots](#app-screenshots)
+- [Figma Inspo](#figma-inspo)
+- [How to run the app](#how-to-run-the-app)
+
 # App Screenshots
 <img width="366" alt="image" src="https://github.com/nayemalam/GithubRepoSearchApp/assets/25883629/7e353c98-c9ef-4aa6-90cd-e1d89915329f">
 
